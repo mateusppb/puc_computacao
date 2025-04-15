@@ -15,4 +15,5 @@ Estudos: Resumos, anotações e experimentos relacionados às matérias estudada
 ---
 
 🚀 Tecnologias Utilizadas
+
 Java: Principal linguagem utilizada nos exercícios de programação.
