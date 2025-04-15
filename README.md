@@ -1,4 +1,4 @@
-📚 **puc_computacao**
+#📚 **puc_computacao**
 
 Este repositório contém os projetos, exercícios, trabalhos e estudos realizados durante o curso de Ciência da Computação na PUC Minas - Lourdes. O objetivo é consolidar o aprendizado nas diversas disciplinas e tecnologias abordadas durante a graduação.
 ---
