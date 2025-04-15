@@ -2,355 +2,204 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
-
-
-public class Show {
-    private String show_id;
-    private String type;
-    private String title;
-    private String[] director;
+class Show {
+    private String show_id, type, title, rating, duration, director, country, listed_in;
     private String[] cast;
-    private String[] country;
-    private Date date_added;
     private int release_year;
-    private String rating;
-    private String duration;
-    private String[] listed_in;
+    private Date date_added;
 
     public Show() {
-        this.show_id = "NaN";
-        this.type = "NaN";
-        this.title = "NaN";
-        this.director = new String[]{"NaN"};
+        this.show_id = this.type = this.title = this.rating = this.duration = this.director = this.country = "NaN";
         this.cast = new String[]{"NaN"};
-        this.country = new String[]{"NaN"};
         this.date_added = null;
         this.release_year = 0;
-        this.rating = "NaN";
-        this.duration = "NaN";
-        this.listed_in = new String[]{"NaN"};
     }
 
+    //metodos setters e getters de todos os atributos
     public String getId() {return this.show_id; }
-    public void setId(String show_id) {this.show_id = show_id; }
+    public void setId(String show_id) {this.show_id = show_id.isEmpty() ? "NaN" : show_id; }
 
     public String getType() {return this.type; }
-    public void setType(String type) {this.type = type; }
+    public void setType(String type) {this.type = type.isEmpty() ? "NaN" : type; }
 
     public String getTitle() {return this.title; }
-    public void setTitle(String title) {this.title = title; }
+    public void setTitle(String title) {this.title = title.isEmpty() ? "NaN" : title; }
 
-    public String[] getDirector() {return director; }
-    public void setDirector(String[] diretorArray) {this.director = diretorArray;}
+    public String getDirector() {return director; }
+    public void setDirector(String director) {this.director = director.isEmpty() ? "NaN" : director;}
 
-    public String[] getCast() {return cast; }
-    public void setCast(String[] cast) {this.cast = cast; }
+    public String[] get_cast() {return cast; }
+    public void set_cast(String[] cast){
+        if(cast == null || cast.length == 0) {
+            this.cast = new String[]{"NaN"};
+        }
+        else {
+            for(int i = 0; i < cast.length - 1; i++) {
+                int menor = i;
+                for(int j = i + 1; j < cast.length; j++) {
+                    if (cast[j].compareTo(cast[menor]) < 0) {
+                        menor = j;
+                    }
+                }
+                String temp = cast[i];
+                cast[i] = cast[menor];
+                cast[menor] = temp;
+            }
+            this.cast = cast;
+        }
+    }
 
-    public String[] getCountry() {return country; }
-    public void setCountry(String[] country) {this.country = country; }
+    public String get_country() {return country; }
+    public void set_country(String country) {this.country = country.isEmpty() ? "NaN" : country; }
 
     public Date getDate_added() {return date_added; }
     public void setDate_added(Date date_added) {this.date_added = date_added; }
 
     public int getRelease_year() {return release_year; }
-    public void setRelease_year(int release_year) {this.release_year = release_year; }
+    public void setRelease_year(int release_year) {this.release_year = (release_year == 0) ? 0 : release_year; }
 
     public String getRating() {return rating; }
-    public void setRating(String rating) {this.rating = rating; }
+    public void setRating(String rating) {this.rating = rating.isEmpty() ? "NaN" : rating; }
 
     public String getDuration() {return duration; }
-    public void setDuration(String duration) {this.duration = duration; }
+    public void setDuration(String duration) {this.duration = duration.isEmpty() ? "NaN" : duration; }
 
-    public String[] getListed_in() {return listed_in; }
-    public void setListed_in(String[] listed_in) {this.listed_in = listed_in; }
-
-
-
-    public void setarArrayDiretor(String lista){
-        // split para separar por vírgula (dentro das aspas) e remover espaços vazios
-        String[] listaDiretores = lista.split("\\s*,\\s*");
-        setDirector(listaDiretores);
-    }
+    public String getListed_in() {return listed_in; }
+    public void setListed_in(String listed_in) {this.listed_in = listed_in.isEmpty() ? "NaN" : listed_in; }
 
 
-
-    public void setarArrayCast(String lista){
-        // split para separar por vírgula (dentro das aspas) e remover espaços vazios
-        String[] listaCast = lista.split("\\s*,\\s*");
-        setCast(listaCast);
-    }
-
-
-
-    public void setarArrayListedIn(String lista){
-        // split para separar por vírgula (dentro das aspas) e remover espaços vazios
-        String[] listed = lista.split("\\s*,\\s*");
-        setListed_in(listed);
-    }
-
-    public void setarArrayCountry(String lista){
-        // split para separar por vírgula (dentro das aspas) e remover espaços vazios
-        String[] country = lista.split("\\s*,\\s*");
-        setCountry(country);
-    }
-
-
-    public void Imprimir(String Show_id, Show[] filmes){
-        for (Show filme : filmes) {
-            if (filme.getId().equals(Show_id)) {
-                System.out.print("=> " + filme.getId() + " ## " + filme.getType() + " ## " + filme.getTitle() + " ## ");
+    public void ler(String linha) throws Exception {
+        // Lista para guardar os campos separados
+        List<String> atributos = new ArrayList<>();
+        StringBuilder campoAtual = new StringBuilder();
+        boolean Aspas = false;
+    
+        // Separação manual dos campos
+        for (int i = 0; i < linha.length(); i++) {
+            char c = linha.charAt(i);
+    
+            if (c == '"') {
+                // Trata aspas duplas escapadas ("")
+                if (Aspas && i + 1 < linha.length() && linha.charAt(i + 1) == '"') {
+                    campoAtual.append('"');
+                    i++;
+                } else {
+                    Aspas = !Aspas;
+                }
+            } else if (c == ',' && !Aspas) {
+                // Fim de campo
+                atributos.add(campoAtual.toString());
+                campoAtual.setLength(0); // esvazia o campo pro próximo atributo
+            } else {
+                campoAtual.append(c);
             }
         }
+        atributos.add(campoAtual.toString());
+    
+        // Preenchendo atributos
+        setId(atributos.get(0));
+        setType(atributos.get(1));
+        setTitle(atributos.get(2));
+        setDirector(atributos.get(3));
+    
+        String arrayCast = atributos.get(4);
+        if (arrayCast.isEmpty()) {
+            set_cast(new String[0]);
+        } else {
+            set_cast(arrayCast.split(",\\s*"));
+        }
+    
+        set_country(atributos.get(5));
+    
+        String dataStr = atributos.get(6);
+        if (dataStr.isEmpty()) {
+            // March 1, 1900 caso esteja vazia
+            this.date_added = new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH).parse("March 1, 1900");
+        } else {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH);
+                this.date_added = sdf.parse(dataStr);
+            } catch (Exception e) {
+                this.date_added = null; // se não conseguir converter
+            }
+        }
+
+        if (!atributos.get(7).isEmpty()) {
+            this.release_year = Integer.parseInt(atributos.get(7));
+        }
+        this.rating = atributos.get(8);
+        this.duration = atributos.get(9);
+        this.listed_in = atributos.get(10);
     }
 
 
+        public void imprimir() {
+
+            SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH);
+            System.out.println("=> "+this.show_id + " ## " +
+                               this.title + " ## " +
+                               this.type + " ## " +
+                               this.director + " ## [" +
+                               String.join(", ", this.cast) + "] ## " +
+                               this.country + " ## " +
+                               (this.date_added != null ? sdf.format(this.date_added) : "NaN") + " ## " +
+                               this.release_year + " ## " +
+                               this.rating + " ## " +
+                               this.duration + " ## [" +
+                               this.listed_in+"] ##");
+        }
+
+    }
+
+public class Q01 {
     public static void main(String[] args) throws FileNotFoundException, ParseException {
-        String path = "C:\\\\Temp\\\\disneyplus.csv";
+        String path = "/tmp/disneyplus.csv";
         File arquivo = new File(path);
+
+        ArrayList<Show> catalogo = new ArrayList<>();
         Scanner sc = new Scanner(arquivo);
         String linha; //salva a linha de um filme para separar depois os atributos
-        String atributo = "";
-        Show[] filmes = new Show[1368];
-        int n = 0; //contador
+        
 
-        //ignorar a primeira linha (com atributos)
-        if (sc.hasNextLine()) {
-            sc.nextLine();
-        }
-
+        sc.nextLine(); //ignorar a primeira linha (com atributos)
         while (sc.hasNextLine()) {
-            filmes[n] = new Show();
             linha = sc.nextLine();
-            int i = 0;
+            Show s = new Show();
 
-            //SHOW ID
-            //while para separar o show_id
-            while(linha.charAt(i) != ','){
-                atributo += linha.charAt(i);
-                i++;
+            try {
+                s.ler(linha); //chama a função que cria um objeto a partir da linha lida
             }
-            i++;
-            filmes[n].setId(atributo);
-            atributo = "";
-            
-            //TYPE
-            //while para separar o type
-            while(linha.charAt(i) != ','){
-                atributo += linha.charAt(i);
-                i++;
-            }
-            i++;
-            filmes[n].setType(atributo);
-            atributo = "";
-
-            //TITLE
-            //leitura do título caso ele tenha vírgula (ler de aspas á aspas)
-            if(linha.charAt(i) == '"'){
-                i++;
-                while(linha.charAt(i) != '"'){
-                    atributo += linha.charAt(i);
-                    i++;
-                }
-                i++;
-                filmes[n].setTitle(atributo);
-                atributo = "";
-            }
-            //leitura do título padrão até a vírgula
-            else{
-                while(linha.charAt(i) != ','){
-                    atributo += linha.charAt(i);
-                    i++;
-                }
-                i++;
-                filmes[n].setTitle(atributo);
-                atributo = "";
+            catch (Exception ex){
             }
 
-            //DIRECTOR
-            //Caso haja mais de um com "", chamaremos a função que realiza o split
-            if(linha.charAt(i) == '"'){
-                String lista = "";
-                i++;
-                while(linha.charAt(i) != '"'){
-                    lista += linha.charAt(i);
-                    i++;
-                }
-                if(!"".equals(lista)) filmes[n].setarArrayDiretor(lista);
-                i++; 
-                i++;
-            }
-            //leitura do diretor padrão até a vírgula
-            else{
-                if(linha.charAt(i) != ','){
-                    while(linha.charAt(i) != ','){
-                        atributo += linha.charAt(i);
-                        i++;
-                    }
-                }
-                    if(!"".equals(atributo)) {
-                        String[] diretor = new String[1];
-                        diretor[0] = atributo;
-                        filmes[n].setDirector(diretor);
-                    }
-                    atributo = "";
-                    i++;
-            }
-
-
-            //CAST
-            //Caso haja mais de um com "", chamaremos a função que realiza o split
-            if(linha.charAt(i) == '"'){
-                String lista = "";
-                i++;
-                while(linha.charAt(i) != '"'){
-                    lista += linha.charAt(i);
-                    i++;
-                }
-                if(!"".equals(lista)) filmes[n].setarArrayCast(lista);
-                i++;
-                i++;
-            }
-            // leitura do elenco padrão até a vírgula
-            else{
-                while(linha.charAt(i) != ','){
-                    atributo += linha.charAt(i);
-                    i++;
-                }
-                if(!"".equals(atributo)) {
-                    String[] cast = new String[1];
-                    cast[0] = atributo;
-                    filmes[n].setCast(cast);
-                }
-                i++;
-                atributo = "";
-            }
-            //COUNTRY
-            //Caso haja mais de um com "", chamaremos a função que realiza o split
-            if(linha.charAt(i) == '"'){
-                String lista = "";
-                i++;
-                while(linha.charAt(i) != '"'){
-                    lista += linha.charAt(i);
-                    i++;
-                }
-                if(!"".equals(lista)) filmes[n].setarArrayCountry(lista);
-                i++;
-                i++;
-            }
-            // leitura do elenco padrão até a vírgula
-            else{
-                while(linha.charAt(i) != ','){
-                    atributo += linha.charAt(i);
-                    i++;
-                }
-                if(!"".equals(atributo)) {
-                    String[] country = new String[1];
-                    country[0] = atributo;
-                    filmes[n].setCountry(country);
-                }
-                i++;
-                atributo = "";
-            }
-            System.out.println(Arrays.toString(filmes[n].getCountry()));
-
-
-            // DATE ADDED
-            if (linha.charAt(i) == '"') {
-                i++;
-                while (linha.charAt(i) != '"') {
-                    atributo += linha.charAt(i);
-                    i++;
-                }
-                i++;
-                if (linha.charAt(i) == ',') i++;
-            } else {
-                while (linha.charAt(i) != ',') {
-                    atributo += linha.charAt(i);
-                    i++;
-                }
-                i++;
-            }
-            if (!"".equals(atributo)) {
-                atributo = atributo.trim();
-                // Checa se a data contém vírgula, o que indica presença do ano
-                if (atributo.contains(",")) {
-                    SimpleDateFormat formato = new SimpleDateFormat("MMMM d, yyyy", java.util.Locale.ENGLISH);
-                    try {
-                        Date data = formato.parse(atributo);
-                        filmes[n].setDate_added(data);
-                    } catch (ParseException e) {
-                        System.out.println("Erro ao converter data: " + atributo);
-                    }
-                } else {
-                    System.out.println("Data incompleta ou inválida: " + atributo);
-                }
-            }
-            if (linha.charAt(i) == ',') i++;
-            atributo = "";
-            
-            //RELEASE YEAR
-            while (linha.charAt(i) != ',') {
-                atributo += linha.charAt(i);
-                i++;
-            }
-            //converter string para inteiro antes de chamar a função set
-            int lancamento = Integer.parseInt(atributo);
-            filmes[n].setRelease_year(lancamento);
-            i++;
-            atributo = "";
-
-            //RATING
-            while (linha.charAt(i) != ',') {
-                atributo += linha.charAt(i);
-                i++;
-            }
-            if(!"".equals(atributo)) filmes[n].setRating(atributo);
-            i++;
-            atributo = "";
-
-
-            //DURATION
-            while (linha.charAt(i) != ',') {
-                atributo += linha.charAt(i);
-                i++;
-            }
-            filmes[n].setDuration(atributo);
-            i++;
-            atributo = "";
-
-            //LISTED IN
-            //caso seja uma lista, leitura até as aspas
-            if(linha.charAt(i) == '"'){
-                String lista = "";
-                i++;
-                while(linha.charAt(i) != '"'){
-                    lista += linha.charAt(i);
-                    i++;
-                }
-                if(!"".equals(lista)) filmes[n].setarArrayListedIn(lista);
-            }
-            //caso seja apenas um item em listed_in, leitura até a vírgula
-            else{
-                while(linha.charAt(i) != ','){
-                    atributo += linha.charAt(i);
-                    i++;
-                }
-                if(!"".equals(atributo)) {
-                    String[] listed = new String[1];
-                    listed[0] = atributo;
-                    filmes[n].setListed_in(listed);
-                }
-                i++;
-                atributo = "";
-            }
-
-            //incrementar o n para o proximo objeto do array
-            n++;
-            if(n == 21) break;
-        }            
+            catalogo.add(s);
         }
+
+        sc.close();
+        Scanner scanner = new Scanner(System.in);
+        String input;
+
+        //buscar um filme no catalogo pelo id digitado
+        while(scanner.hasNextLine()) {
+            input = scanner.nextLine();
+
+            if("FIM".equals(input)) break;
+
+            //percorrer o catálogo para imprimir o filme indicado pelo id
+            for (Show s : catalogo) {
+                if (s.getId().equals(input)) {
+                    s.imprimir();
+                    break;
+                }
+            }
+        }
+
+        scanner.close();
     }
+}
